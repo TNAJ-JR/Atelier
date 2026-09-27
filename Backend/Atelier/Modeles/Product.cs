@@ -1,4 +1,4 @@
-﻿using Atelier.Enum;
+﻿using Atelier.Enums;
 
 namespace Atelier.Modeles
 {
