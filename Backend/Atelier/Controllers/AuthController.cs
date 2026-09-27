@@ -8,8 +8,8 @@ namespace Atelier.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        // GET: api/<AuthController>
-        [HttpPost]
+        // POST: api/Auth/login
+        [HttpPost("login")]
         public IEnumerable<string> Login()
         {
             return new string[] { "value1", "value2" };
