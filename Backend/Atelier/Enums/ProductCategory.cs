@@ -1,4 +1,4 @@
-﻿namespace Atelier.Enum
+﻿namespace Atelier.Enums
 {
     public enum ProductCategory
     {
