@@ -1,6 +1,6 @@
 ﻿namespace Atelier.Enum
 {
-    public enum Status
+    public enum OrderStatus
     {
         Draft,
         Confirmed,

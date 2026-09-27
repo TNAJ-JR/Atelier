@@ -1,8 +1,8 @@
 ﻿namespace Atelier.Enum
 {
-    public enum Roles
+    public enum UserRole
     {
-        Staff,
         Admin,
+        Staff
     }
 }
