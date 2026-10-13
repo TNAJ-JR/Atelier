@@ -1,5 +1,6 @@
 ﻿using Atelier.Enums;
 using Atelier.Modeles;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Globalization;
@@ -22,7 +23,7 @@ namespace Atelier.Data;
 //      convertisseur ci-dessous, les lignes écrites par EF et celles écrites
 //      par le seed SQL ne se trieraient pas ensemble.
 
-public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : DbContext(options)
+public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : IdentityDbContext(options)
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Product> Products => Set<Product>();
