@@ -8,24 +8,10 @@ using System.Globalization;
 namespace Atelier.Data;
 
 
-// DbContext — configuration Fluent API alignée sur schema.sql
-//
-// Deux points où EF Core diverge de la base par défaut, et que ce fichier
-// corrige explicitement :
-//
-//   1. Les enums. HasConversion<string>() écrirait "Draft", "Admin", "Bois"
-//      en PascalCase, ce qui violerait les contraintes
-//      CHECK (status IN ('draft', ...)). D'où les convertisseurs en minuscules.
-//
-//   2. Les dates. Le provider SQLite sérialise DateTimeOffset au format
-//      "yyyy-MM-dd HH:mm:ss.fffffffzzz", incompatible avec l'ISO 8601 produit
-//      par strftime('%Y-%m-%dT%H:%M:%fZ','now') dans schema.sql. Sans le
-//      convertisseur ci-dessous, les lignes écrites par EF et celles écrites
-//      par le seed SQL ne se trieraient pas ensemble.
 
 public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : IdentityDbContext(options)
 {
-    public DbSet<User> Users => Set<User>();
+    public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Order> Orders => Set<Order>();
@@ -52,7 +38,7 @@ public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : Iden
     protected override void OnModelCreating(ModelBuilder b)
     {
         // users
-        b.Entity<User>(e =>
+        b.Entity<ApplicationUser>(e =>
         {
             e.ToTable("users");
             e.HasKey(x => x.Id);

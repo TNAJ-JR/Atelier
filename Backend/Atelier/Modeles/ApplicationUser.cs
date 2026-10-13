@@ -1,10 +1,10 @@
 ﻿using Atelier.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace Atelier.Modeles
 {
-    public class User
+    public class ApplicationUser : IdentityUser<int>
     {
-        public int Id { get; set; }
         public required string Email { get; set; }
 
         /// <summary>Hachage BCrypt. Ne sort jamais de l'API — voir UserDto.</summary>
