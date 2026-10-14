@@ -1,4 +1,4 @@
-﻿using Atelier.Enums;
+using Atelier.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Atelier.Modeles

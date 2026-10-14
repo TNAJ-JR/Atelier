@@ -8,12 +8,13 @@ namespace Atelier.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        // POST: api/Auth/login
-        [HttpPost("login")]
-        public IEnumerable<string> Login()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        //// POST: api/Auth/login
+        //[HttpPost("login")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ServiceResult<LoginViewModel>> Login()
+        //{
+        //    return new string[] { "value1", "value2" };
+        //}
 
         // GET api/<AuthController>/5
         [HttpGet("{id}")]

@@ -1,5 +1,6 @@
-﻿using Atelier.Enums;
+using Atelier.Enums;
 using Atelier.Modeles;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -9,7 +10,7 @@ namespace Atelier.Data;
 
 
 
-public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : IdentityDbContext(options)
+public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>(options)
 {
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
     public DbSet<Product> Products => Set<Product>();
@@ -37,6 +38,8 @@ public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : Iden
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        base.OnModelCreating(b);
+
         // users
         b.Entity<ApplicationUser>(e =>
         {
