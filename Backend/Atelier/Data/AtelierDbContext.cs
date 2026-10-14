@@ -1,4 +1,3 @@
-using Atelier.Data.Configurations;
 using Atelier.Modeles;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
