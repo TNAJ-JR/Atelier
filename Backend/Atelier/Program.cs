@@ -1,7 +1,9 @@
 using Atelier.Data;
 using Atelier.Modeles;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,14 +17,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiDocument();
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<AtelierDbContext>();
 
+//Base de données
 builder.Services.AddDbContext<AtelierDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.Configure<IdentityOptions>(options =>
+//Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 {
+    options.SignIn.RequireConfirmedAccount = false;
     // Password settings
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
@@ -38,10 +41,38 @@ builder.Services.Configure<IdentityOptions>(options =>
     // User settings
     options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+}).AddEntityFrameworkStores<AtelierDbContext>()
+    .AddDefaultTokenProviders();
+
+//Configuration JWT
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is not configured.");
+var keyBytes = Convert.FromBase64String(jwtKey);
+if (keyBytes.Length < 32)
+{
+    throw new InvalidOperationException("Clé Jwt trop courte.");
+}
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+
+        ClockSkew = TimeSpan.Zero
+    };
 });
-
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

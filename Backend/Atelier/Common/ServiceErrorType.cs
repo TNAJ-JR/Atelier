@@ -4,6 +4,7 @@
     {
         None,
         ValidationError,
+        AccountLockedOut,
         NotFound,
         Conflict,
         Unauthorized,

@@ -1,13 +1,49 @@
-﻿using Atelier.Data;
+﻿using Atelier.Common;
+using Atelier.Data;
+using Atelier.Modeles;
+using Atelier.ViewModels;
+using Microsoft.AspNetCore.Identity;
 
 namespace Atelier.Services
 {
     public class AuthService
     {
         public readonly AtelierDbContext _context;
-        public AuthService(AtelierDbContext context)
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly JwtService _jwtService;
+        public AuthService(AtelierDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _jwtService = jwtService;
+        }
+
+        public async Task<ServiceResult<LoginViewModel>> LoginAsync(string email, string password)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return ServiceResult<LoginViewModel>.Fail("Identifiants incorrects", ServiceErrorType.NotFound);
+            }
+            var result = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
+            if (!result.Succeeded)
+            {
+                if (result.IsLockedOut)
+                {
+                    return ServiceResult<LoginViewModel>.Fail("Compte verrouillé suite à trop de tentatives incorrectes. Réessayez dans quelques minutes.", ServiceErrorType.AccountLockedOut);
+                }
+                return ServiceResult<LoginViewModel>.Fail("Identifiants incorrets", ServiceErrorType.Unauthorized);
+            }
+            var token = await _userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "Default");
+            var loginViewModel = new LoginViewModel
+            {
+                Email = user.Email,
+                Token = token,
+                //Role = user.Role.ToString(),
+            };
+            return ServiceResult<LoginViewModel>.Ok(loginViewModel, "Authentification réussie.");
         }
 
         //public async Task<ServiceResult<ApplicationUser>> AuthenticateAsync(string email, string password)

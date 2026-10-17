@@ -6,6 +6,7 @@ namespace Atelier.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class AuthController : ControllerBase
     {
         //// POST: api/Auth/login

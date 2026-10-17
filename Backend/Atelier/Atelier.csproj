@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>85e7f3db-f6d4-4fb4-acee-a0b91a68a740</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,8 @@
     <PackageReference Include="NuGet.Packaging" Version="7.9.0" />
     <PackageReference Include="NuGet.Protocol" Version="7.9.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.17.10" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>
 
 </Project>
