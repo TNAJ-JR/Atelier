@@ -70,7 +70,10 @@ builder.Services.AddAuthentication(options =>
 
         IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
 
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+
+        NameClaimType = "name",
+
     };
 });
 var app = builder.Build();
