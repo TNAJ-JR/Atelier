@@ -1,4 +1,4 @@
-﻿using Atelier.Modeles;
+using Atelier.Modeles;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,24 +19,19 @@ namespace Atelier.Services
             _userManager = userManager;
         }
 
-        public string GenerateAccess(ApplicationUser user)
+        public string GenerateAccessToken(string userId, string email, string prenom, string nom, IList<string> roles)
         {
-            var roles = await _userManager.GetRolesAsync(user);
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(ClaimTypes.GivenName, user.Nom ?? ""),
-                new(ClaimTypes.Surname, user.Prenom ?? "")
+                new(JwtRegisteredClaimNames.Name, $"{prenom} {nom}"),
+                new(JwtRegisteredClaimNames.Email, email),
             };
-            if (user.Email is not null)
-            {
-                claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
-            }
 
             foreach (var role in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
             }
 
             var key = new SymmetricSecurityKey(Convert.FromBase64String(_configuration["Jwt:Key"]!));

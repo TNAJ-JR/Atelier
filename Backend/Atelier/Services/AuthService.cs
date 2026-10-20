@@ -1,4 +1,4 @@
-﻿using Atelier.Common;
+using Atelier.Common;
 using Atelier.Data;
 using Atelier.Modeles;
 using Atelier.ViewModels;
@@ -11,7 +11,7 @@ namespace Atelier.Services
         public readonly AtelierDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly JwtService _jwtService;
+        private readonly IJwtService _jwtService;
         public AuthService(AtelierDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtService jwtService)
         {
             _context = context;
@@ -36,12 +36,13 @@ namespace Atelier.Services
                 }
                 return ServiceResult<LoginViewModel>.Fail("Identifiants incorrets", ServiceErrorType.Unauthorized);
             }
-            var token = await _userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "Default");
+            var roles = _userManager.GetRolesAsync(user).Result;
+            var accessTokentoken = _jwtService.GenerateAccessToken(user.Id.ToString(), user.Email, user.Prenom, user.Nom, roles);
+            var refreshToken = _jwtService.GenerateRefreshToken();
             var loginViewModel = new LoginViewModel
             {
                 Email = user.Email,
-                Token = token,
-                //Role = user.Role.ToString(),
+                accessToken = accessTokentoken,
             };
             return ServiceResult<LoginViewModel>.Ok(loginViewModel, "Authentification réussie.");
         }
