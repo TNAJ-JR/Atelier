@@ -11,7 +11,7 @@ namespace Atelier.Services
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
-        private UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public JwtService(IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
@@ -24,7 +24,6 @@ namespace Atelier.Services
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, userId),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(JwtRegisteredClaimNames.Name, $"{prenom} {nom}"),
                 new(JwtRegisteredClaimNames.Email, email),
             };

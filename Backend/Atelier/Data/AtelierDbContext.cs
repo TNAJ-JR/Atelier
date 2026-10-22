@@ -15,6 +15,7 @@ public class AtelierDbContext(DbContextOptions<AtelierDbContext> options) : Iden
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderTotal> OrderTotals => Set<OrderTotal>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

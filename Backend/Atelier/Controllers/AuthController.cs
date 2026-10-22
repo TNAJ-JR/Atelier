@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Atelier.Common;
+using Atelier.Services;
+using Atelier.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -9,13 +12,20 @@ namespace Atelier.Controllers
 
     public class AuthController : ControllerBase
     {
-        //// POST: api/Auth/login
-        //[HttpPost("login")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<ServiceResult<LoginViewModel>> Login()
-        //{
-        //    return new string[] { "value1", "value2" };
-        //}
+        private readonly AuthService _authService;
+
+        public AuthController(AuthService authService)
+        {
+            _authService = authService;
+        }
+
+        // POST: api/Auth/login
+        [HttpPost("login")]
+        public async Task<ServiceResult<LoginViewModel>> Login(string email, string password)
+        {
+            var result = await _authService.LoginAsync(email, password);
+            return result;
+        }
 
         // GET api/<AuthController>/5
         [HttpGet("{id}")]

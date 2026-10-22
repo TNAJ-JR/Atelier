@@ -1,5 +1,6 @@
 using Atelier.Data;
 using Atelier.Modeles;
+using Atelier.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,18 @@ builder.Services.AddOpenApiDocument();
 //Base de données
 builder.Services.AddDbContext<AtelierDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:5173")
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 //Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -76,6 +89,7 @@ builder.Services.AddAuthentication(options =>
 
     };
 });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

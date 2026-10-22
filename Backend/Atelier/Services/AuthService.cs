@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Atelier.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         public readonly AtelierDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -41,8 +41,13 @@ namespace Atelier.Services
             var refreshToken = _jwtService.GenerateRefreshToken();
             var loginViewModel = new LoginViewModel
             {
+                Nom = user.Nom,
+                Prenom = user.Prenom,
                 Email = user.Email,
-                accessToken = accessTokentoken,
+                Token = accessTokentoken,
+                RefreshToken = refreshToken,
+                Roles = roles
+
             };
             return ServiceResult<LoginViewModel>.Ok(loginViewModel, "Authentification réussie.");
         }
