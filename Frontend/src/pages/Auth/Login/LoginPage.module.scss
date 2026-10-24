@@ -1,0 +1,95 @@
+// Mise en page de l'écran de connexion uniquement.
+// Couleurs, typo et composants viennent des tokens, des classes t-* et de components/ui.
+@use "styles/mixins" as mx;
+
+.page {
+  display: grid;
+  min-height: 100svh;
+  padding: var(--space-24);
+  place-items: center;
+  background: var(--surface-sidebar);
+
+  @include mx.mobile {
+    padding: var(--space-12);
+  }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: 1280px;
+  min-height: min(800px, calc(100svh - 2 * var(--space-24)));
+  overflow: hidden;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  background: var(--surface-page);
+
+  @include mx.mobile {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: calc(100svh - 2 * var(--space-12));
+  }
+}
+
+.brandPanel {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-40);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+
+  @include mx.tablet {
+    padding: var(--space-32);
+  }
+
+  @include mx.mobile {
+    padding: var(--space-24);
+  }
+}
+
+.introduction {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-20);
+  padding-block: var(--space-40);
+
+  @include mx.mobile {
+    gap: var(--space-16);
+    padding-block: var(--space-32);
+  }
+}
+
+.title {
+  max-width: 480px;
+}
+
+// Charte : « Terracotta clair — aide sur fond encre »
+.description {
+  max-width: 420px;
+  color: var(--text-on-inverse-help);
+}
+
+.locale {
+  color: var(--text-tertiary);
+}
+
+.formPanel {
+  display: grid;
+  padding: var(--space-40);
+  place-items: center;
+
+  @include mx.tablet {
+    padding: var(--space-32);
+  }
+
+  @include mx.mobile {
+    padding: var(--space-32) var(--space-24);
+  }
+}
+
+.formContent {
+  width: 100%;
+  max-width: 360px;
+}

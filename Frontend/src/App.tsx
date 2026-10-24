@@ -1,10 +1,14 @@
-import LoginPage from "./pages/LoginPage";
+import { Navigate, Route, Routes } from "react-router";
+import LoginPage from "./pages/Auth/Login/LoginPage";
+import ProfilePage from "./pages/Profile/ProfilePage";
 
 function App() {
   return (
-    <>
-      <LoginPage />
-    </>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
 
