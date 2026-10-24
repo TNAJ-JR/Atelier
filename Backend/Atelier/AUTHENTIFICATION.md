@@ -2,11 +2,11 @@
 
 ## Routes
 - POST /api/auth/login : JSON { "email": "...", "password": "..." }.
-- POST /api/auth/refresh : JSON { "refreshToken": "..." }.
+- POST /api/auth/refresh : cookie HttpOnly, sans refresh token dans le corps.
 - GET /api/auth/me : Authorization: Bearer <token>.
-- POST /api/auth/logout : Authorization: Bearer <token>, réponse 204.
+- POST /api/auth/logout : cookie HttpOnly et en-tête CSRF, réponse 204.
 
-Une connexion ou un renouvellement renvoie directement token, refreshToken, expiresAt
+Une connexion ou un renouvellement renvoie directement token et expiresAt
 et user (id chaîne, name, email, nom, prenom, roles), sans enveloppe ServiceResult.
 Les erreurs métier exposent message et errors avec le statut HTTP approprié.
 Les requêtes mal formées retournent les ValidationProblemDetails ASP.NET.
@@ -53,10 +53,7 @@ La factory EF permet les migrations sans démarrer le serveur ni initialiser les
 
 La rotation a été vérifiée sur une base SQL temporaire, puis cette base a été supprimée. Aucun script de test n'est conservé dans le projet.
 
-Le frontend existant sait lire la réponse de connexion. Pour exploiter toute la session,
-il devra conserver le refreshToken, appeler refresh et remplacer les jetons reçus,
-puis appeler logout avant de supprimer les identifiants locaux. Une suppression locale seule
-ne révoque pas la session côté serveur.
+Le frontend conserve le JWT en mémoire, restaure la session avec le cookie au rechargement, renouvelle les accès après un 401 et appelle logout côté serveur. Les appels cookie présentent le jeton CSRF obtenu depuis GET /api/auth/csrf.
 
 
 ## Rotation avec historique
@@ -82,4 +79,6 @@ avant de retirer les colonnes d'historique. Aucun token brut n'est sauvegardé.
 en chaîne, la réutilisation d'un ancien token, l'isolation entre connexions d'un même compte,
 les renouvellements concurrents, les courses avec déconnexion, le rollback après erreur SQL,
 l'expiration et le retour arrière/réapplication de la migration.
-Le transport reste JSON ; le cookie HttpOnly reste à traiter séparément.
+Le refresh token est transporté exclusivement dans un cookie HttpOnly/Secure. Voir SECURITE_AUTHENTIFICATION.md pour la protection CSRF et le frontend.
+## Cookies et CSRF
+Lire SECURITE_AUTHENTIFICATION.md pour le contrat actuel : les secrets refresh ne sont plus exposés en JSON ni conservés par JavaScript. Login, refresh et logout exigent la paire antiforgery et HTTPS. Les routes métier restent authentifiées par Bearer.
