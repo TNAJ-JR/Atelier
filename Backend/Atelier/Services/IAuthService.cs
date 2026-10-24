@@ -1,11 +1,11 @@
-﻿using Atelier.Common;
+using Atelier.Common;
 using Atelier.ViewModels;
 
-namespace Atelier.Services
-{
-    public interface IAuthService
-    {
-        public Task<ServiceResult<LoginViewModel>> LoginAsync(string email, string password);
+namespace Atelier.Services;
 
-    }
+public interface IAuthService
+{
+    Task<ServiceResult<LoginViewModel>> LoginAsync(string email, string password);
+    Task<ServiceResult<LoginViewModel>> RefreshAsync(string refreshToken);
+    Task LogoutAsync(int userId, int sessionId);
 }

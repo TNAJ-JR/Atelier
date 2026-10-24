@@ -1,14 +1,11 @@
-﻿namespace Atelier.ViewModels
-{
-    public class LoginViewModel
-    {
-        public string Nom { get; set; } = string.Empty;
-        public string Prenom { get; set; } = string.Empty;
-        public string Token { get; set; } = string.Empty;
-        public string RefreshToken { get; set; }
-        public string Email { get; set; }
-        public int UserId { get; set; }
-        public IList<string> Roles { get; set; }
+namespace Atelier.ViewModels;
 
-    }
+public class LoginViewModel
+{
+    public string Token { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public DateTimeOffset ExpiresAt { get; set; }
+    public required UserViewModel User { get; set; }
 }
+
+public record UserViewModel(string Id, string Name, string Email, string Nom, string Prenom, IList<string> Roles);

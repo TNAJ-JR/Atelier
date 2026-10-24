@@ -1,55 +1,57 @@
-﻿using Atelier.Common;
+using Atelier.Common;
+using Atelier.Modeles;
+using Atelier.Requests;
 using Atelier.Services;
 using Atelier.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+namespace Atelier.Controllers;
 
-namespace Atelier.Controllers
+[Route("api/auth")]
+[ApiController]
+[Authorize]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+public class AuthController(IAuthService authService, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    [HttpPost("login"), AllowAnonymous, EnableRateLimiting("auth")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request) =>
+        ToHttpResult(await authService.LoginAsync(request.Email, request.Password));
 
-    public class AuthController : ControllerBase
+    [HttpPost("refresh"), AllowAnonymous, EnableRateLimiting("auth")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request) =>
+        ToHttpResult(await authService.RefreshAsync(request.RefreshToken));
+
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
     {
-        private readonly AuthService _authService;
+        var user = await userManager.FindByIdAsync(User.FindFirst("sub")!.Value);
+        if (user is null) return Unauthorized(new { message = "Session invalide." });
+        return Ok(new UserViewModel(user.Id.ToString(), $"{user.Prenom} {user.Nom}".Trim(),
+            user.Email!, user.Nom, user.Prenom, await userManager.GetRolesAsync(user)));
+    }
 
-        public AuthController(AuthService authService)
-        {
-            _authService = authService;
-        }
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await authService.LogoutAsync(int.Parse(User.FindFirst("sub")!.Value),
+            int.Parse(User.FindFirst("sid")!.Value));
+        return NoContent();
+    }
 
-        // POST: api/Auth/login
-        [HttpPost("login")]
-        public async Task<ServiceResult<LoginViewModel>> Login(string email, string password)
+    private IActionResult ToHttpResult(ServiceResult<LoginViewModel> result)
+    {
+        if (result.IsSuccess) return Ok(result.Data);
+        var status = result.ErrorType switch
         {
-            var result = await _authService.LoginAsync(email, password);
-            return result;
-        }
-
-        // GET api/<AuthController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<AuthController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<AuthController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<AuthController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+            ServiceErrorType.ValidationError => 400,
+            ServiceErrorType.Unauthorized or ServiceErrorType.AccountLockedOut or ServiceErrorType.NotFound => 401,
+            ServiceErrorType.Forbidden => 403,
+            ServiceErrorType.Conflict => 409,
+            _ => 500
+        };
+        return StatusCode(status, new { message = result.Message, errors = result.Errors });
     }
 }

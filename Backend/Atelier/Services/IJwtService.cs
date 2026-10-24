@@ -1,9 +1,9 @@
-namespace Atelier.Services
+using Atelier.Modeles;
+namespace Atelier.Services;
+
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        public string GenerateAccessToken(string userId, string email, string prenom, string nom,
-            IList<string> roles);
-        public string GenerateRefreshToken();
-    }
+    (string Token, DateTimeOffset ExpiresAt) GenerateAccessToken(ApplicationUser user, RefreshToken session, IList<string> roles);
+    string GenerateRefreshToken();
+    string HashRefreshToken(string token);
 }
