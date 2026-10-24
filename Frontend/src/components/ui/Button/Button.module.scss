@@ -1,0 +1,96 @@
+// Boutons — charte : un seul bouton principal par écran.
+// Les actions destructives en ligne sont des liens soulignés (variant "danger-subtle").
+
+.button {
+  display: inline-flex;
+  min-height: var(--control-h-md);
+  padding: var(--space-10) var(--space-16);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:disabled {
+    border-color: var(--border-control);
+    background: var(--surface-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  // Chargement : le bouton reste lisible, seul le curseur change
+  &[aria-busy="true"] {
+    cursor: progress;
+  }
+}
+
+// --- Variantes ---------------------------------------------------------------
+
+.primary:not(:disabled) {
+  background: var(--action-primary-bg);
+  color: var(--action-primary-text);
+
+  &:hover {
+    background: var(--action-primary-bg-hover);
+  }
+}
+
+.secondary:not(:disabled) {
+  border-color: var(--border-control);
+  background: var(--action-secondary-bg);
+  color: var(--text-primary);
+
+  &:hover {
+    background: var(--action-secondary-bg-hover);
+  }
+}
+
+.danger:not(:disabled) {
+  background: var(--danger);
+  color: var(--action-primary-text);
+
+  &:hover {
+    background: var(--danger-hover);
+  }
+}
+
+// Destructif discret : lien souligné #9A2F1F
+.dangerSubtle {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--danger);
+  font-weight: var(--fw-medium);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover:not(:disabled) {
+    color: var(--danger-hover);
+  }
+
+  &:disabled {
+    border: 0;
+    background: none;
+  }
+}
+
+// --- Tailles -----------------------------------------------------------------
+
+.sm {
+  min-height: var(--control-h-sm);
+  padding-block: var(--space-6);
+  padding-inline: var(--space-12);
+  font-size: var(--fs-13);
+}
+
+// Bouton principal pleine largeur : 42 px
+.block {
+  width: 100%;
+  min-height: var(--control-h-lg);
+}

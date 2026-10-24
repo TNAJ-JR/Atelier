@@ -1,0 +1,31 @@
+// =============================================================================
+// Échelles : espacements, rayons, hauteurs, typographie → variables CSS.
+// Générées depuis tokens/_config.scss : impossible de sortir de la charte.
+// =============================================================================
+
+@use "./config" as *;
+
+:root {
+  @each $step in $spacing {
+    --space-#{$step}: #{$step * 1px};
+  }
+
+  @each $name, $value in $radius {
+    --radius-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $control-height {
+    --control-h-#{$name}: #{$value};
+  }
+
+  @each $step in $font-size {
+    --fs-#{$step}: #{$step * 1px};
+  }
+
+  --font-serif: "Instrument Serif", georgia, serif;
+  --font-sans: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+}

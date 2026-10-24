@@ -1,0 +1,67 @@
+// =============================================================================
+// Tokens sémantiques — ce que les composants utilisent.
+// On nomme le RÔLE, pas la couleur : changer la palette ne touche que ce fichier.
+// =============================================================================
+
+:root {
+  // --- Surfaces -------------------------------------------------------------
+  --surface-page: var(--palette-paper); //               Fond d'écran
+  --surface-sidebar: var(--palette-linen); //            Barre latérale
+  --surface-sidebar-hover: var(--palette-linen-strong); // Survol de la nav
+  --surface-skeleton: var(--palette-linen); //           Squelettes
+  --surface-card: var(--palette-white); //               Cartes
+  --surface-field: var(--palette-white); //              Champs
+  --surface-table-head: var(--palette-paper-soft); //    En-têtes de tableau
+  --surface-row-hover: var(--palette-paper-softer); //   Survol des lignes
+  --surface-inverse: var(--palette-ink-900); //          Panneaux « encre »
+  --surface-disabled: var(--palette-paper-soft);
+
+  // --- Texte ----------------------------------------------------------------
+  --text-primary: var(--palette-ink-900);
+  --text-secondary-strong: var(--palette-ink-600); // Paragraphes secondaires
+  --text-secondary: var(--palette-ink-500); //        Métadonnées, aides
+  --text-tertiary: var(--palette-ink-400); //         Surtitres mono, en-têtes
+  --text-disabled: var(--palette-ink-300); //         Texte inactif
+  --text-on-inverse: var(--palette-paper); //         Texte sur encre
+  --text-on-inverse-help: var(--palette-terracotta-300); // Aide sur fond encre
+
+  // --- Bordures -------------------------------------------------------------
+  --border-control: var(--palette-sand-300);
+  --border-nav: var(--palette-sand-200);
+  --border-card: var(--palette-sand-150);
+  --border-divider: var(--palette-sand-100);
+  --border-focus: var(--palette-ink-900);
+
+  // --- Actions --------------------------------------------------------------
+  --action-primary-bg: var(--palette-ink-900);
+  --action-primary-bg-hover: var(--palette-ink-800);
+  --action-primary-text: var(--palette-paper);
+  --action-secondary-bg: var(--palette-white);
+  --action-secondary-bg-hover: var(--palette-paper-soft);
+
+  // --- Accent (liens, état actif, stock bas) --------------------------------
+  --accent: var(--palette-terracotta-500);
+  --accent-hover: var(--palette-terracotta-700);
+
+  // --- Danger / erreur ------------------------------------------------------
+  --danger: var(--palette-red-700); //          Bordure invalide, destructif
+  --danger-hover: var(--palette-red-800);
+  --danger-text: var(--palette-red-800); //     Texte des alertes
+  --danger-code: var(--palette-red-400); //     Codes HTTP
+  --danger-surface: var(--palette-red-100); //  Fond des alertes
+  --danger-field: var(--palette-red-50); //     Fond champ invalide
+
+  // --- Statuts de commande --------------------------------------------------
+  --status-draft-bg: var(--palette-draft-100);
+  --status-draft-text: var(--palette-ink-600);
+  --status-confirmed-bg: var(--palette-blue-100);
+  --status-confirmed-text: var(--palette-blue-700);
+  --status-shipped-bg: var(--palette-green-100);
+  --status-shipped-text: var(--palette-green-700);
+  --status-cancelled-bg: var(--palette-red-100);
+  --status-cancelled-text: var(--palette-red-700);
+
+  // --- Ombres (bordures plutôt qu'ombres : 2 usages seulement) -------------
+  --shadow-nav-active: 0 1px 0 var(--palette-sand-200);
+  --shadow-modal: 0 20px 50px var(--palette-shadow-modal);
+}

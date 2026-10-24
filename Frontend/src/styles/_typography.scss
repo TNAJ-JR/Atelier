@@ -1,0 +1,121 @@
+// =============================================================================
+// Typographie — une classe par ligne de la charte. Préfixe « t- ».
+// Les classes sont indépendantes des balises : <h1 class="t-h1">, <p class="t-kpi">…
+// =============================================================================
+
+@use "./mixins" as mx;
+
+// --- Instrument Serif (Regular uniquement) -----------------------------------
+
+// Titre de couverture — Serif 52 / 1.02 · −0.01em
+.t-display {
+  font-family: var(--font-serif);
+  font-size: var(--fs-52);
+  font-weight: var(--fw-regular);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+
+  @include mx.tablet {
+    font-size: var(--fs-48);
+  }
+
+  @include mx.mobile {
+    font-size: var(--fs-40);
+  }
+}
+
+// Indicateur clé — Serif 64 / 1 · −0.02em
+.t-kpi {
+  font-family: var(--font-serif);
+  font-size: var(--fs-64);
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+// Total, page 404 — Serif 48 / 1 · −0.02em
+.t-total {
+  font-family: var(--font-serif);
+  font-size: var(--fs-48);
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+// H1 d'écran — Serif 40 / 1.1
+.t-h1 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-40);
+  font-weight: var(--fw-regular);
+  line-height: 1.1;
+}
+
+// Titre de modale, logo — Serif 28 / 1.1
+.t-h2 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  line-height: 1.1;
+}
+
+// --- Instrument Sans (400, 500, 600) -----------------------------------------
+
+// Texte d'introduction — Sans 400 15 / 1.5
+.t-intro {
+  font-size: var(--fs-15);
+  font-weight: var(--fw-regular);
+  line-height: 1.5;
+}
+
+// Texte courant, cellules — Sans 400–500 14 / 1.4
+.t-body {
+  font-size: var(--fs-14);
+  line-height: 1.4;
+}
+
+// Libellés, titres de carte — Sans 600 13
+.t-label {
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+}
+
+// Badge, message d'erreur — Sans 500–600 12
+.t-small {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+}
+
+// En-tête de tableau — Sans 600 11 · capitales · 0.06em
+.t-th {
+  font-size: var(--fs-11);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// --- JetBrains Mono (400, 500) -----------------------------------------------
+
+// Surtitre — Mono 500 12 · capitales · 0.08em
+.t-overline {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+// Chiffres et codes — Mono 400–500 11–14 (taille héritée du contexte)
+// Prix, quantités, SKU, n° de commande, codes d'erreur.
+.t-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+// Valeur numérique dans un tableau : mono + alignée à droite
+.t-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

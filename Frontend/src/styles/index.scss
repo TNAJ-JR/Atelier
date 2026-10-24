@@ -1,0 +1,7 @@
+// Point d'entrée des styles globaux — importé une seule fois dans main.tsx.
+// Ordre : tokens → reset → typographie → utilitaires.
+// Les styles des composants vivent dans leurs CSS Modules (src/components/ui).
+@use "./tokens";
+@use "./base";
+@use "./typography";
+@use "./utilities";

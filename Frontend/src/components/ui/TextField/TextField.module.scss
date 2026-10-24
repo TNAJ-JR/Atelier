@@ -1,0 +1,66 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6); // Libellé → champ
+}
+
+.label {
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+}
+
+.input {
+  width: 100%;
+  min-height: var(--control-h-md);
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-control);
+  background: var(--surface-field);
+  color: var(--text-primary);
+  font-size: var(--fs-14);
+  line-height: 1.4;
+
+  &::placeholder {
+    color: var(--text-disabled);
+  }
+
+  &:focus,
+  &:focus-visible {
+    border-color: var(--border-focus);
+    outline: 1px solid var(--border-focus);
+    outline-offset: 0;
+  }
+
+  &:disabled {
+    background: var(--surface-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  &[aria-invalid="true"] {
+    border-color: var(--danger);
+    background: var(--danger-field);
+
+    &:focus,
+    &:focus-visible {
+      outline-color: var(--danger);
+    }
+  }
+}
+
+// Champ affichant un SKU, un prix… (charte : chiffres et codes en mono)
+.mono {
+  font-family: var(--font-mono);
+}
+
+.hint {
+  color: var(--text-secondary);
+  font-size: var(--fs-12);
+}
+
+.error {
+  color: var(--danger-text);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+}

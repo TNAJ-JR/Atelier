@@ -1,0 +1,52 @@
+// =============================================================================
+// Primitives — palette brute de la charte Atelier v1.0
+// SEUL fichier du projet autorisé à contenir des couleurs hexadécimales.
+// Les composants n'utilisent JAMAIS ces variables directement :
+// ils passent par les tokens sémantiques (_semantic.scss).
+// =============================================================================
+
+:root {
+  // Fonds et surfaces (du plus foncé au plus clair)
+  --palette-linen-strong: #e4ddcf; // Lin survol
+  --palette-linen: #ede8dd; //        Lin
+  --palette-paper: #f4f1ea; //        Papier
+  --palette-paper-soft: #f8f6f1; //   Papier clair
+  --palette-paper-softer: #fbfaf7; // Survol ligne
+  --palette-white: #fff; //           Blanc
+
+  // Encre et texte (contraste décroissant)
+  --palette-ink-900: #1f1d1a; // Encre
+  --palette-ink-800: #3a362f; // Encre survol
+  --palette-ink-600: #5a554c; // Texte 2 foncé
+  --palette-ink-500: #6b665e; // Texte 2
+  --palette-ink-400: #8a8377; // Texte 3
+  --palette-ink-300: #b8b1a4; // Désactivé
+
+  // Bordures
+  --palette-sand-300: #d9d3c6; // Contrôle
+  --palette-sand-200: #e0d9cb; // Nav
+  --palette-sand-150: #e3ded3; // Carte
+  --palette-sand-100: #efebe2; // Séparateur
+
+  // Accent — terracotta (le seul accent de l'interface)
+  --palette-terracotta-300: #e9a58a; // Terracotta clair
+  --palette-terracotta-500: #b4532a; // Terracotta
+  --palette-terracotta-700: #8e3f1f; // Terracotta foncé
+
+  // Erreur
+  --palette-red-800: #8a2b1c; // Erreur texte
+  --palette-red-700: #9a2f1f; // Erreur
+  --palette-red-400: #a8574a; // Erreur code
+  --palette-red-100: #f6e1dc; // Erreur fond
+  --palette-red-50: #fdf7f5; //  Erreur champ
+
+  // Statuts de commande
+  --palette-draft-100: #ece8df;
+  --palette-blue-100: #e3ecf7;
+  --palette-blue-700: #1f4f8a;
+  --palette-green-100: #e2f0e4;
+  --palette-green-700: #256b3a;
+
+  // Ombre de la modale
+  --palette-shadow-modal: rgb(0 0 0 / 25%);
+}

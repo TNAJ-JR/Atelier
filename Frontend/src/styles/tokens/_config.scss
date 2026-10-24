@@ -1,0 +1,24 @@
+// =============================================================================
+// Configuration des échelles (maps SCSS) — n'émet AUCUN CSS.
+// Importable sans risque partout (utilitaires, modules) pour boucler sur les valeurs.
+// =============================================================================
+
+// Échelle d'espacement de la charte (px)
+$spacing: (2, 6, 8, 10, 12, 16, 20, 24, 32, 40);
+
+$radius: (
+  "skeleton": 4px,
+  "control": 6px,
+  "card": 10px,
+  "modal": 12px,
+  "pill": 999px,
+);
+
+$control-height: (
+  "sm": 32px, //     pagination, petits boutons
+  "filter": 34px, // filtres
+  "md": 40px, //     champs, boutons (charte : 38–40)
+  "lg": 42px, //     bouton principal pleine largeur
+);
+
+$font-size: (11, 12, 13, 14, 15, 28, 40, 48, 52, 64);

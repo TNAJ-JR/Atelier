@@ -1,0 +1,20 @@
+// Mixins — n'émettent aucun CSS tant qu'ils ne sont pas inclus.
+// Utilisation dans un CSS Module : @use "styles/mixins" as mx;
+
+@mixin mobile {
+  @media (width <= 640px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (width <= 900px) {
+    @content;
+  }
+}
+
+// Anneau de focus clavier commun à tous les éléments interactifs
+@mixin focus-ring($color: var(--border-focus)) {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+}

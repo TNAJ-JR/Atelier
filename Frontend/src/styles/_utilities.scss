@@ -1,0 +1,78 @@
+// =============================================================================
+// Utilitaires — volontairement peu nombreux, réservés à la MISE EN PAGE.
+// Les espacements sont générés depuis l'échelle de la charte : .mb-24 existe,
+// .mb-25 n'existera jamais.
+// =============================================================================
+
+@use "./tokens/config" as *;
+
+// --- Flex --------------------------------------------------------------------
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-fill {
+  flex: 1;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+// --- Espacements (échelle de la charte) --------------------------------------
+@each $step in $spacing {
+  .gap-#{$step} {
+    gap: var(--space-#{$step});
+  }
+
+  .mt-#{$step} {
+    margin-top: var(--space-#{$step});
+  }
+
+  .mb-#{$step} {
+    margin-bottom: var(--space-#{$step});
+  }
+}
+
+// --- Couleurs de texte -------------------------------------------------------
+.text-secondary-strong {
+  color: var(--text-secondary-strong);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-tertiary {
+  color: var(--text-tertiary);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+// --- Accessibilité -----------------------------------------------------------
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

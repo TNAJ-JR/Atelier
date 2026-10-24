@@ -1,0 +1,30 @@
+.badge {
+  display: inline-flex;
+  padding: var(--space-2) var(--space-8);
+  align-items: center;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.draft {
+  background: var(--status-draft-bg);
+  color: var(--status-draft-text);
+}
+
+.confirmed {
+  background: var(--status-confirmed-bg);
+  color: var(--status-confirmed-text);
+}
+
+.shipped {
+  background: var(--status-shipped-bg);
+  color: var(--status-shipped-text);
+}
+
+.cancelled {
+  background: var(--status-cancelled-bg);
+  color: var(--status-cancelled-text);
+}

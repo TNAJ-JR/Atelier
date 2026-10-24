@@ -1,0 +1,50 @@
+// Logo — couleurs pilotées par les tokens (aucun hex dans le TSX).
+// tone="default" : sur fond papier · tone="inverse" : sur fond encre.
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-10);
+  color: var(--text-primary);
+}
+
+.mark {
+  flex-shrink: 0;
+}
+
+.tile {
+  fill: var(--surface-inverse);
+}
+
+.letter {
+  fill: var(--text-on-inverse);
+}
+
+.bar {
+  fill: var(--accent);
+}
+
+.hole {
+  fill: var(--surface-inverse);
+}
+
+// Wordmark — charte : Serif 28 / 1.1, Regular uniquement
+.wordmark {
+  font-family: var(--font-serif);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  line-height: 1.1;
+}
+
+.inverse {
+  color: var(--text-on-inverse);
+
+  .tile,
+  .hole {
+    fill: var(--surface-page);
+  }
+
+  .letter {
+    fill: var(--text-primary);
+  }
+}
