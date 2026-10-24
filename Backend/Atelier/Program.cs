@@ -1,5 +1,6 @@
 using Atelier.Data;
 using Atelier.Modeles;
+using Atelier.Security;
 using Atelier.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -17,12 +18,23 @@ builder.Services.AddDbContext<AtelierDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? (builder.Environment.IsDevelopment() ? ["http://localhost:5173"] : []);
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 {
-    if (origins.Length > 0) policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+    if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
 }));
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = CookieAuth.CsrfHeaderName;
+    options.Cookie.Name = CookieAuth.CsrfCookieName;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = CookieAuth.GetSameSiteMode(builder.Configuration, builder.Environment);
+    options.Cookie.Path = "/";
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddScoped<CookieCsrfFilter>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -38,12 +50,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 }).AddEntityFrameworkStores<AtelierDbContext>().AddDefaultTokenProviders();
 
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is not configured.");
-var keyBytes = Convert.FromBase64String(jwtKey);
-if (keyBytes.Length < 32) throw new InvalidOperationException("Clé Jwt trop courte.");
-foreach (var name in new[] { "Issuer", "Audience" })
-    if (string.IsNullOrWhiteSpace(builder.Configuration[$"Jwt:{name}"]))
-        throw new InvalidOperationException($"Jwt:{name} doit être configuré.");
+var encodedJwtSigningKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is not configured.");
+var jwtSigningKeyBytes = Convert.FromBase64String(encodedJwtSigningKey);
+if (jwtSigningKeyBytes.Length < 32) throw new InvalidOperationException("Clé Jwt trop courte.");
+foreach (var settingName in new[] { "Issuer", "Audience" })
+    if (string.IsNullOrWhiteSpace(builder.Configuration[$"Jwt:{settingName}"]))
+        throw new InvalidOperationException($"Jwt:{settingName} doit être configuré.");
 if (builder.Configuration.GetValue("Jwt:ExpirationMinutes", 15) is < 1 or > 60 ||
     builder.Configuration.GetValue("Jwt:RefreshTokenExpirationDays", 14) is < 1 or > 90)
     throw new InvalidOperationException("Durée JWT invalide (1-60 minutes, renouvellement 1-90 jours).");
@@ -58,41 +70,53 @@ builder.Services.AddAuthentication(options =>
     options.MapInboundClaims = false;
     options.TokenValidationParameters = new()
     {
-        ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true,
-        RequireSignedTokens = true, RequireExpirationTime = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        RequireSignedTokens = true,
+        RequireExpirationTime = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        IssuerSigningKey = new SymmetricSecurityKey(jwtSigningKeyBytes),
         ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
-        ClockSkew = TimeSpan.Zero, NameClaimType = "name", RoleClaimType = "role"
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = "name",
+        RoleClaimType = "role"
     };
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = authenticationContext =>
+        {
+            if (CookieAuth.IsCookieEndpoint(authenticationContext.Request.Path))
+                authenticationContext.NoResult();
+            return Task.CompletedTask;
+        },
         OnTokenValidated = async context =>
         {
             var principal = context.Principal!;
-            if (!int.TryParse(principal.FindFirst("sub")?.Value, out var userId) ||
-                !int.TryParse(principal.FindFirst("sid")?.Value, out var sessionId))
+            if (!int.TryParse(principal.FindFirst("sub")?.Value, out var applicationUserId) ||
+                !int.TryParse(principal.FindFirst("sid")?.Value, out var refreshTokenId))
             {
                 context.Fail("Session invalide.");
                 return;
             }
-            var db = context.HttpContext.RequestServices.GetRequiredService<AtelierDbContext>();
-            var session = await db.RefreshTokens.AsNoTracking().Include(x => x.User).Include(x => x.Family)
-                .SingleOrDefaultAsync(x => x.Id == sessionId && x.UserId == userId,
+            var dbContext = context.HttpContext.RequestServices.GetRequiredService<AtelierDbContext>();
+            var refreshTokenEntity = await dbContext.RefreshTokens.AsNoTracking().Include(x => x.User).Include(x => x.Family)
+                .SingleOrDefaultAsync(x => x.Id == refreshTokenId && x.UserId == applicationUserId,
                     context.HttpContext.RequestAborted);
-            if (session is null || session.RevokedAt is not null || session.ExpiresAt <= DateTimeOffset.UtcNow ||
-                session.Family.RevokedAt is not null ||
-                session.SecurityStamp != session.User.SecurityStamp ||
-                session.SecurityStamp != principal.FindFirst("stamp")?.Value)
+            if (refreshTokenEntity is null || refreshTokenEntity.RevokedAt is not null || refreshTokenEntity.ExpiresAt <= DateTimeOffset.UtcNow ||
+                refreshTokenEntity.Family.RevokedAt is not null ||
+                refreshTokenEntity.SecurityStamp != refreshTokenEntity.User.SecurityStamp ||
+                refreshTokenEntity.SecurityStamp != principal.FindFirst("stamp")?.Value)
             {
                 context.Fail("Session expirée ou révoquée.");
                 return;
             }
-            var users = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
-            var currentRoles = await users.GetRolesAsync(session.User);
-            var tokenRoles = principal.FindAll("role").Select(x => x.Value);
-            if (await users.IsLockedOutAsync(session.User) || !currentRoles.Order().SequenceEqual(tokenRoles.Order()))
+            var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var currentUserRoles = await userManager.GetRolesAsync(refreshTokenEntity.User);
+            var jwtRoles = principal.FindAll("role").Select(x => x.Value);
+            if (await userManager.IsLockedOutAsync(refreshTokenEntity.User) || !currentUserRoles.Order().SequenceEqual(jwtRoles.Order()))
                 context.Fail("Compte verrouillé ou droits modifiés.");
         }
     };
@@ -100,6 +124,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
         .RequireAuthenticatedUser().Build());
+
+//Rate limiting pour les endpoints d'authentification (login et refresh) pour limiter les tentatives de brute force
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = 429;
@@ -108,7 +134,8 @@ builder.Services.AddRateLimiter(options =>
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = builder.Configuration.GetValue("Auth:RequestsPerMinute", 10),
-            Window = TimeSpan.FromMinutes(1), QueueLimit = 0
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
         }));
 });
 builder.Services.AddProblemDetails();
@@ -119,11 +146,11 @@ if (app.Environment.IsDevelopment())
     app.UseOpenApi(options => options.Path = "/openapi/{documentName}.json");
     app.MapScalarApiReference().AllowAnonymous();
 }
-await using (var scope = app.Services.CreateAsyncScope())
+await using (var serviceScope = app.Services.CreateAsyncScope())
 {
     await RolesInitializer.InitializeAsync(
-        scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(),
-        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>(),
+        serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(),
+        serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>(),
         app.Configuration, app.Environment.IsDevelopment() && app.Configuration.GetValue("SeedUsers:Enabled", false));
 }
 app.UseHttpsRedirection();
@@ -133,4 +160,3 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();
 app.Run();
-public partial class Program { }

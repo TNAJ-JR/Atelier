@@ -8,119 +8,120 @@ using Microsoft.EntityFrameworkCore;
 namespace Atelier.Services;
 
 public class AuthService(
-    AtelierDbContext context, UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager, IJwtService jwt, IConfiguration configuration) : IAuthService
+    AtelierDbContext dbContext, UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager, IJwtService jwtService, IConfiguration configuration) : IAuthService
 {
-    private const string InvalidCredentials = "Identifiants incorrects ou compte temporairement indisponible.";
-    private static readonly string DummyHash = new PasswordHasher<ApplicationUser>()
+    private const string InvalidCredentialsMessage = "Identifiants incorrects ou compte temporairement indisponible.";
+    private static readonly string DummyPasswordHash = new PasswordHasher<ApplicationUser>()
         .HashPassword(new ApplicationUser(), Guid.NewGuid().ToString());
 
     public async Task<ServiceResult<LoginViewModel>> LoginAsync(string email, string password)
     {
-        var user = await userManager.FindByEmailAsync(email.Trim());
-        if (user is null)
+        var applicationUser = await userManager.FindByEmailAsync(email.Trim());
+        if (applicationUser is null)
         {
-            _ = userManager.PasswordHasher.VerifyHashedPassword(new ApplicationUser(), DummyHash, password);
-            return ServiceResult<LoginViewModel>.Fail(InvalidCredentials, ServiceErrorType.Unauthorized);
+            _ = userManager.PasswordHasher.VerifyHashedPassword(new ApplicationUser(), DummyPasswordHash, password);
+            return ServiceResult<LoginViewModel>.Fail(InvalidCredentialsMessage, ServiceErrorType.Unauthorized);
         }
-        var result = await signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
-        if (!result.Succeeded)
-            return ServiceResult<LoginViewModel>.Fail(InvalidCredentials, ServiceErrorType.Unauthorized);
-        var raw = jwt.GenerateRefreshToken();
-        var session = new RefreshToken
+        var signInResult = await signInManager.CheckPasswordSignInAsync(applicationUser, password, lockoutOnFailure: true);
+        if (!signInResult.Succeeded)
+            return ServiceResult<LoginViewModel>.Fail(InvalidCredentialsMessage, ServiceErrorType.Unauthorized);
+        var refreshTokenValue = jwtService.GenerateRefreshToken();
+        var refreshTokenEntity = new RefreshToken
         {
-            UserId = user.Id, TokenHash = jwt.HashRefreshToken(raw), SecurityStamp = user.SecurityStamp!,
+            UserId = applicationUser.Id, TokenHash = jwtService.HashRefreshToken(refreshTokenValue), SecurityStamp = applicationUser.SecurityStamp!,
             Family = new RefreshTokenFamily(),
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(configuration.GetValue("Jwt:RefreshTokenExpirationDays", 14))
         };
-        context.RefreshTokens.Add(session);
-        await context.SaveChangesAsync();
-        return ServiceResult<LoginViewModel>.Ok(await CreateResponse(user, session, raw), "Authentification réussie.");
+        dbContext.RefreshTokens.Add(refreshTokenEntity);
+        await dbContext.SaveChangesAsync();
+        return ServiceResult<LoginViewModel>.Ok(await CreateLoginResponseAsync(applicationUser, refreshTokenEntity, refreshTokenValue), "Authentification réussie.");
     }
 
     public async Task<ServiceResult<LoginViewModel>> RefreshAsync(string refreshToken)
     {
-        var hash = jwt.HashRefreshToken(refreshToken);
-        var familyId = await context.RefreshTokens.AsNoTracking()
-            .Where(x => x.TokenHash == hash).Select(x => (Guid?)x.FamilyId).SingleOrDefaultAsync();
-        if (familyId is null) return InvalidSession();
+        var refreshTokenHash = jwtService.HashRefreshToken(refreshToken);
+        var refreshTokenFamilyId = await dbContext.RefreshTokens.AsNoTracking()
+            .Where(refreshTokenRecord => refreshTokenRecord.TokenHash == refreshTokenHash).Select(refreshTokenRecord => (Guid?)refreshTokenRecord.FamilyId).SingleOrDefaultAsync();
+        if (refreshTokenFamilyId is null) return InvalidSession();
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        // Serialize refresh, replay detection and logout on the same family, including new descendants.
-        var family = await LockFamily(familyId.Value);
-        if (family is null || family.RevokedAt is not null) return InvalidSession();
+        await using var databaseTransaction = await dbContext.Database.BeginTransactionAsync();
+        // Serialize refresh, replay detection and logout on the same refreshTokenFamily, including new descendants.
+        var refreshTokenFamily = await LockRefreshTokenFamilyAsync(refreshTokenFamilyId.Value);
+        if (refreshTokenFamily is null || refreshTokenFamily.RevokedAt is not null) return InvalidSession();
 
-        var current = await context.RefreshTokens.Include(x => x.User)
-            .SingleOrDefaultAsync(x => x.TokenHash == hash);
-        if (current is null) return InvalidSession();
+        var currentRefreshToken = await dbContext.RefreshTokens.Include(refreshTokenRecord => refreshTokenRecord.User)
+            .SingleOrDefaultAsync(refreshTokenRecord => refreshTokenRecord.TokenHash == refreshTokenHash);
+        if (currentRefreshToken is null) return InvalidSession();
 
         // Check reuse even if the old token has expired: its active descendants must also be revoked.
-        if (current.UsedAt is not null || current.RevokedAt is not null)
+        if (currentRefreshToken.UsedAt is not null || currentRefreshToken.RevokedAt is not null)
         {
-            family.RevokedAt = DateTimeOffset.UtcNow;
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            refreshTokenFamily.RevokedAt = DateTimeOffset.UtcNow;
+            await dbContext.SaveChangesAsync();
+            await databaseTransaction.CommitAsync();
             return InvalidSession();
         }
-        if (current.ExpiresAt <= DateTimeOffset.UtcNow ||
-            current.SecurityStamp != current.User.SecurityStamp || await userManager.IsLockedOutAsync(current.User))
+        if (currentRefreshToken.ExpiresAt <= DateTimeOffset.UtcNow ||
+            currentRefreshToken.SecurityStamp != currentRefreshToken.User.SecurityStamp || await userManager.IsLockedOutAsync(currentRefreshToken.User))
         {
-            family.RevokedAt = DateTimeOffset.UtcNow;
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            refreshTokenFamily.RevokedAt = DateTimeOffset.UtcNow;
+            await dbContext.SaveChangesAsync();
+            await databaseTransaction.CommitAsync();
             return InvalidSession();
         }
 
-        var raw = jwt.GenerateRefreshToken();
-        var replacement = new RefreshToken
+        var refreshTokenValue = jwtService.GenerateRefreshToken();
+        var replacementRefreshToken = new RefreshToken
         {
-            UserId = current.UserId, TokenHash = jwt.HashRefreshToken(raw),
-            SecurityStamp = current.SecurityStamp, FamilyId = current.FamilyId,
-            ExpiresAt = current.ExpiresAt
+            UserId = currentRefreshToken.UserId, TokenHash = jwtService.HashRefreshToken(refreshTokenValue),
+            SecurityStamp = currentRefreshToken.SecurityStamp, FamilyId = currentRefreshToken.FamilyId,
+            ExpiresAt = currentRefreshToken.ExpiresAt
         };
-        current.UsedAt = DateTimeOffset.UtcNow;
-        current.ReplacedByToken = replacement;
-        context.RefreshTokens.Add(replacement);
-        // SaveChanges creates the successor and records consumption/link atomically in this transaction.
-        await context.SaveChangesAsync();
-        var response = await CreateResponse(current.User, replacement, raw);
-        await transaction.CommitAsync();
-        return ServiceResult<LoginViewModel>.Ok(response);
+        currentRefreshToken.UsedAt = DateTimeOffset.UtcNow;
+        currentRefreshToken.ReplacedByToken = replacementRefreshToken;
+        dbContext.RefreshTokens.Add(replacementRefreshToken);
+        // SaveChanges creates the successor and records consumption/link atomically in this databaseTransaction.
+        await dbContext.SaveChangesAsync();
+        var loginResponse = await CreateLoginResponseAsync(currentRefreshToken.User, replacementRefreshToken, refreshTokenValue);
+        await databaseTransaction.CommitAsync();
+        return ServiceResult<LoginViewModel>.Ok(loginResponse);
     }
 
     private static ServiceResult<LoginViewModel> InvalidSession() =>
         ServiceResult<LoginViewModel>.Fail("Session expirée ou invalide.", ServiceErrorType.Unauthorized);
 
-    private Task<RefreshTokenFamily?> LockFamily(Guid id) =>
-        context.Set<RefreshTokenFamily>()
-            .FromSqlInterpolated($"SELECT * FROM [RefreshTokenFamilies] WITH (UPDLOCK, HOLDLOCK) WHERE [Id] = {id}")
+    private Task<RefreshTokenFamily?> LockRefreshTokenFamilyAsync(Guid refreshTokenFamilyId) =>
+        dbContext.Set<RefreshTokenFamily>()
+            .FromSqlInterpolated($"SELECT * FROM [RefreshTokenFamilies] WITH (UPDLOCK, HOLDLOCK) WHERE [Id] = {refreshTokenFamilyId}")
             .SingleOrDefaultAsync();
 
-    private async Task<LoginViewModel> CreateResponse(ApplicationUser user, RefreshToken session, string raw)
+    private async Task<LoginViewModel> CreateLoginResponseAsync(ApplicationUser applicationUser, RefreshToken refreshTokenEntity, string refreshTokenValue)
     {
-        var roles = await userManager.GetRolesAsync(user);
-        var access = jwt.GenerateAccessToken(user, session, roles);
+        var userRoles = await userManager.GetRolesAsync(applicationUser);
+        var accessTokenResult = jwtService.GenerateAccessToken(applicationUser, refreshTokenEntity, userRoles);
         return new()
         {
-            Token = access.Token, RefreshToken = raw, ExpiresAt = access.ExpiresAt,
-            User = new(user.Id.ToString(), $"{user.Prenom} {user.Nom}".Trim(),
-                user.Email!, user.Nom, user.Prenom, roles)
+            Token = accessTokenResult.Token, RefreshToken = refreshTokenValue, RefreshTokenExpiresAt = refreshTokenEntity.ExpiresAt, ExpiresAt = accessTokenResult.ExpiresAt,
+            User = new(applicationUser.Id.ToString(), $"{applicationUser.Prenom} {applicationUser.Nom}".Trim(),
+                applicationUser.Email!, applicationUser.Nom, applicationUser.Prenom, userRoles)
         };
     }
 
-    public async Task LogoutAsync(int userId, int sessionId)
+    public async Task LogoutAsync(string refreshToken)
     {
-        var familyId = await context.RefreshTokens.AsNoTracking()
-            .Where(x => x.Id == sessionId && x.UserId == userId)
-            .Select(x => (Guid?)x.FamilyId).SingleOrDefaultAsync();
-        if (familyId is null) return;
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        var family = await LockFamily(familyId.Value);
-        if (family is not null && family.RevokedAt is null)
+        var refreshTokenHash = jwtService.HashRefreshToken(refreshToken);
+        var refreshTokenFamilyId = await dbContext.RefreshTokens.AsNoTracking()
+            .Where(refreshTokenRecord => refreshTokenRecord.TokenHash == refreshTokenHash)
+            .Select(refreshTokenRecord => (Guid?)refreshTokenRecord.FamilyId).SingleOrDefaultAsync();
+        if (refreshTokenFamilyId is null) return;
+        await using var databaseTransaction = await dbContext.Database.BeginTransactionAsync();
+        var refreshTokenFamily = await LockRefreshTokenFamilyAsync(refreshTokenFamilyId.Value);
+        if (refreshTokenFamily is not null && refreshTokenFamily.RevokedAt is null)
         {
-            family.RevokedAt = DateTimeOffset.UtcNow;
-            await context.SaveChangesAsync();
+            refreshTokenFamily.RevokedAt = DateTimeOffset.UtcNow;
+            await dbContext.SaveChangesAsync();
         }
-        await transaction.CommitAsync();
+        await databaseTransaction.CommitAsync();
     }
 }
