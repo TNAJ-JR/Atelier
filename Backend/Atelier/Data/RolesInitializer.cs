@@ -1,82 +1,65 @@
-﻿using Atelier.Enums;
+using Atelier.Enums;
 using Atelier.Modeles;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-namespace Atelier.Data
+namespace Atelier.Data;
+
+public static class RolesInitializer
 {
-    public static class RolesInitializer
+    public static async Task InitializeAsync(UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole<int>> roleManager, IConfiguration configuration, bool seedUsers = false)
     {
-        public static async Task InitializeAsync(UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+        ArgumentNullException.ThrowIfNull(userManager);
+        ArgumentNullException.ThrowIfNull(roleManager);
+        foreach (var roleName in Enum.GetNames<UserRole>())
+            if (!await roleManager.RoleExistsAsync(roleName))
+                Ensure(await roleManager.CreateAsync(new IdentityRole<int>(roleName)));
+
+        // Optional development accounts. Passwords must come from user secrets, never source code.
+        if (!seedUsers) return;
+        foreach (var role in new[] { UserRole.Admin, UserRole.Staff })
         {
-            if (userManager == null || roleManager == null)
-            {
-                throw new ArgumentNullException("userManager ou roleManager est null");
-            }
-            var roleNames = Enum.GetValues(typeof(UserRole));
-            foreach (var role in roleNames)
-            {
-                string roleName = role.ToString();
-                var roleExists = await roleManager.RoleExistsAsync(roleName);
-                if (!roleExists)
-                {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
-                }
-            }
-
-            var adminUser = await CreateUser(userManager, "admin@atelier.com", "Admin", "User", "Admin123!", UserRole.Admin.ToString());
-            await AddRole(userManager, adminUser, UserRole.Admin.ToString());
-            var staffUser = await CreateUser(userManager, "staff@atelier.com", "Staff", "User", "Staff123!", UserRole.Staff.ToString());
-            await AddRole(userManager, staffUser, UserRole.Staff.ToString());
-
+            var section = configuration.GetSection($"SeedUsers:{role}");
+            var email = section["Email"];
+            var password = section["Password"];
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password)) continue;
+            var user = await CreateUser(userManager, email, section["Prenom"] ?? role.ToString(),
+                section["Nom"] ?? "Atelier", password, role.ToString());
+            await AddRole(userManager, user, role.ToString());
         }
+    }
 
-        public static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager, string email, string prenom, string nom, string password, string role)
+    public static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager,
+        string email, string prenom, string nom, string password, string role)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is not null) return user;
+        user = new ApplicationUser
         {
-            var user = await userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                user = new ApplicationUser
-                {
-                    UserName = email,
-                    Email = email,
-                    Prenom = prenom,
-                    Nom = nom
-                };
-                var result = await userManager.CreateAsync(user, password);
-                if (!result.Succeeded)
-                {
-                    throw new Exception($"Erreur lors de la création de l'utilisateur {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                }
-            }
-            return user;
-        }
+            UserName = email, Email = email, Prenom = prenom, Nom = nom,
+            Role = Enum.Parse<UserRole>(role)
+        };
+        Ensure(await userManager.CreateAsync(user, password));
+        return user;
+    }
 
-        private static async Task AddRole(UserManager<ApplicationUser> userManager, ApplicationUser user, string role)
-        {
-            var roles = await userManager.GetRolesAsync(user);
-            if (!roles.Contains(role))
-            {
-                var result = await userManager.AddToRoleAsync(user, role);
-                if (!result.Succeeded)
-                {
-                    throw new Exception($"Erreur lors de l'ajout de l'utilisateur {user.Email} au rôle {role}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                }
-            }
-        }
+    private static async Task AddRole(UserManager<ApplicationUser> users, ApplicationUser user, string role)
+    {
+        if (!await users.IsInRoleAsync(user, role)) Ensure(await users.AddToRoleAsync(user, role));
+    }
 
-        private static async Task AddClaims(UserManager<ApplicationUser> userManager, ApplicationUser user,
-            params Claim[] claims)
-        {
-            var existingClaims = await userManager.GetClaimsAsync(user);
-            foreach (var claim in existingClaims)
-            {
-                if (!existingClaims.Any(claim => claim.Type == claim.Type && claim.Value == claim.Value))
-                {
-                    await userManager.AddClaimAsync(user, claim);
-                }
-            }
-        }
+    private static async Task AddClaims(UserManager<ApplicationUser> users, ApplicationUser user, params Claim[] claims)
+    {
+        var existing = await users.GetClaimsAsync(user);
+        foreach (var claim in claims)
+            if (!existing.Any(current => current.Type == claim.Type && current.Value == claim.Value))
+                Ensure(await users.AddClaimAsync(user, claim));
+    }
+
+    private static void Ensure(IdentityResult result)
+    {
+        if (!result.Succeeded)
+            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(x => x.Description)));
     }
 }
