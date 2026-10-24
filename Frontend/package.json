@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint:css": "stylelint \"src/**/*.scss\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -15,6 +16,7 @@
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.89.0",
     "react-router": "^7.18.4",
+    "sass": "^1.105.1",
     "yup": "^1.7.1"
   },
   "devDependencies": {
@@ -27,6 +29,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.6",
     "globals": "^17.12.0",
+    "stylelint": "^17.16.0",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "stylelint-declaration-strict-value": "^1.12.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.69.0",
     "vite": "^8.3.0"
