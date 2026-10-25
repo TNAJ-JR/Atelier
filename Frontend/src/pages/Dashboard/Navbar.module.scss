@@ -1,0 +1,120 @@
+.sidebar {
+  width: 232px;
+  flex: 0 0 232px;
+  align-self: flex-start;
+  padding: var(--space-24) var(--space-16);
+  background: var(--surface-sidebar);
+  border-right: 1px solid var(--border-nav);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  margin: 0 var(--space-10) var(--space-24);
+}
+
+.wordmark {
+  font-family: var(--font-serif);
+  font-size: var(--fs-28);
+  line-height: 1.1;
+}
+
+.version {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.04em;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  a {
+    color: inherit;
+    font-family: var(--font-sans);
+    font-size: var(--fs-14);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 36px;
+    padding: var(--space-8) var(--space-10);
+    color: var(--text-secondary-strong);
+    border-radius: var(--radius-control);
+  }
+
+  .active {
+    color: var(--text-primary);
+    background: var(--surface-card);
+    font-weight: var(--fw-semibold);
+    box-shadow: var(--shadow-nav-active);
+  }
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.account {
+  border-top: 1px solid var(--border-nav);
+  padding: var(--space-16) var(--space-10) 0;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  margin-bottom: var(--space-12);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+}
+
+.name {
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+}
+
+.role {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.logout {
+  width: 100%;
+  min-height: var(--control-h-filter);
+  padding: var(--space-6) var(--space-10);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--fs-13);
+  text-align: left;
+}
+

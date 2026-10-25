@@ -3,13 +3,12 @@ import Navbar from "./pages/Dashboard/Navbar";
 
 function App() {
   return (
-    <>
+    <div className="d-flex">
       <Navbar />
       <main>
         <Outlet />
       </main>
-      <footer></footer>
-    </>
+    </div>
   );
 }
 
