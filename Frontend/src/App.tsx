@@ -1,14 +1,15 @@
-import { Navigate, Route, Routes } from "react-router";
-import LoginPage from "./pages/Auth/Login/LoginPage";
-import ProfilePage from "./pages/Profile/ProfilePage";
+import { Outlet } from "react-router";
+import Navbar from "./pages/Dashboard/Navbar";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <>
+      <Navbar />
+      <main>
+        <Outlet />
+      </main>
+      <footer></footer>
+    </>
   );
 }
 
