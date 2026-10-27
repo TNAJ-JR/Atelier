@@ -11,38 +11,42 @@ import {
 } from "./pages";
 import App from "./App";
 import { productsLoader } from "./loaders/productsLoader";
-import ProductsError from "./pages/Products/ProductsError";
+import RouteError from "./components/RouteError/RouteError";
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
       {
-        index: true,
-        element: <Dashboard />,
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "Products",
-        element: <Products />,
-        loader: productsLoader,
-        errorElement: <ProductsError />,
-      },
+        errorElement: <RouteError />,
+        children: [
+          {
+            index: true,
+            element: <Dashboard />,
+          },
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+          },
+          {
+            path: "Products",
+            element: <Products />,
+            loader: productsLoader,
+          },
 
-      {
-        path: "clients",
-        element: <Clients />,
-      },
-      {
-        path: "commandes",
-        element: <Commandes />,
-      },
-      {
-        path: "profile",
-        element: <Profile />,
+          {
+            path: "clients",
+            element: <Clients />,
+          },
+          {
+            path: "commandes",
+            element: <Commandes />,
+          },
+          {
+            path: "profile",
+            element: <Profile />,
+          },
+        ],
       },
     ],
   },

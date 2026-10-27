@@ -1,0 +1,9 @@
+.page {
+  padding: var(--space-32) var(--space-40);
+}
+
+@media (width <= 1000px) {
+  .page {
+    padding: var(--space-24);
+  }
+}
