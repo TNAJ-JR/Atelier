@@ -10,6 +10,8 @@ import {
   Dashboard,
 } from "./pages";
 import App from "./App";
+import { productsLoader } from "./loaders/productsLoader";
+import ProductsError from "./pages/Products/ProductsError";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -26,6 +28,8 @@ const router = createBrowserRouter([
       {
         path: "Products",
         element: <Products />,
+        loader: productsLoader,
+        errorElement: <ProductsError />,
       },
 
       {

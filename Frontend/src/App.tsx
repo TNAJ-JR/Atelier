@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="d-flex">
       <Navbar />
-      <main>
+      <main className="flex-fill" style={{ minWidth: 0 }}>
         <Outlet />
       </main>
     </div>

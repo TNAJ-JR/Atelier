@@ -1,6 +1,7 @@
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import styles from "./Navbar.module.scss";
 function Navbar() {
+  const { pathname } = useLocation();
   return (
     <aside className={styles.sidebar} aria-label="Navigation latérale">
       <div className={styles.brand}>
@@ -10,14 +11,15 @@ function Navbar() {
       <nav aria-label="Navigation principale">
         <ul className={styles.menu}>
           <li>
-            <NavLink to="/">Tableau de bord</NavLink>
+            <NavLink to={pathname === "/" ? "/" : "/dashboard"} end>
+              Tableau de bord
+            </NavLink>
           </li>
           <li>
             <NavLink to="/products">Produits</NavLink>
           </li>
-          <li className={styles.active} aria-current="page">
+          <li>
             <NavLink to="/clients">Clients</NavLink>
-            <span className={styles.dot} aria-hidden="true" />
           </li>
           <li>
             <NavLink to="/commandes">Commandes</NavLink>
