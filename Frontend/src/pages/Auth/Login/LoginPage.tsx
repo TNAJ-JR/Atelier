@@ -8,7 +8,6 @@ import { LoginSchema } from "../../../schemas/authSchema";
 import { useAuth } from "../../../context/AuthContext";
 import type { LoginCredentials } from "../../../types/authTypes";
 
-import { Logo } from "../../../components/Logo/Logo";
 import { Alert, Button, TextField } from "../../../components/ui";
 
 import styles from "./LoginPage.module.scss";
@@ -52,7 +51,7 @@ function LoginPage() {
     <main className={styles.page}>
       <div className={styles.layout}>
         <section className={styles.brandPanel} aria-label="Atelier">
-          <Logo withWordmark tone="inverse" />
+          <span className="t-h2">Atelier</span>
 
           <div className={styles.introduction}>
             <p className={`${styles.title} t-display`}>

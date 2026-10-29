@@ -19,10 +19,10 @@ function Navbar() {
             <NavLink to="/products">Produits</NavLink>
           </li>
           <li>
-            <NavLink to="/clients">Clients</NavLink>
+            <NavLink to={pathname.startsWith("/customers") ? "/customers" : "/clients"}>Clients</NavLink>
           </li>
           <li>
-            <NavLink to="/commandes">Commandes</NavLink>
+            <NavLink to={pathname.startsWith("/orders") ? "/orders" : "/commandes"}>Commandes</NavLink>
           </li>
         </ul>
       </nav>

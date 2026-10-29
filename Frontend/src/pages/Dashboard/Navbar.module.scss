@@ -7,6 +7,15 @@
   border-right: 1px solid var(--border-nav);
 }
 
+@media (width <= 640px) {
+  .sidebar {
+    width: 100%;
+    flex-basis: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-nav);
+  }
+}
+
 .brand {
   display: flex;
   align-items: baseline;

@@ -1,11 +1,12 @@
 import { Outlet } from "react-router";
 import Navbar from "./pages/Dashboard/Navbar";
+import styles from "./App.module.scss";
 
 function App() {
   return (
-    <div className="d-flex">
+    <div className={styles.shell}>
       <Navbar />
-      <main className="flex-fill" style={{ minWidth: 0 }}>
+      <main className={styles.content}>
         <Outlet />
       </main>
     </div>

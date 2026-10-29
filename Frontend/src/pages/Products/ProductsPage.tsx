@@ -1,5 +1,7 @@
 import { Button } from "../../components/ui/Button/Button";
 import styles from "./ProductsPage.module.scss";
+import { Link } from "react-router";
+import pageStyles from "../../components/layout/PageLayout.module.scss";
 
 function Products() {
   return (
@@ -9,7 +11,7 @@ function Products() {
           <p className="t-overline text-tertiary">0 produit</p>
           <h1 id="catalogue-title" className="t-h1">Catalogue</h1>
         </div>
-        <Button variant="primary">Nouveau produit</Button>
+        <Link className={pageStyles.primaryLink} to="/products/new">Nouveau produit</Link>
       </header>
 
       <div className={styles.filters}>
@@ -66,4 +68,3 @@ function Products() {
   );
 }
 export default Products;
-
