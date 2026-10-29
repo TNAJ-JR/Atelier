@@ -24,6 +24,11 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 {
     if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
 }));
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+builder.Services.AddSingleton(TimeZoneInfo.FindSystemTimeZoneById(
+    builder.Configuration["Dashboard:TimeZone"] ?? "America/Toronto"));
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = CookieAuth.CsrfHeaderName;
