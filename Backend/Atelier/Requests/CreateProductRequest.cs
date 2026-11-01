@@ -1,19 +1,26 @@
-﻿using Atelier.Enums;
-using Atelier.Modeles;
+using System.ComponentModel.DataAnnotations;
+using Atelier.Enums;
 
-namespace Atelier.Requests
+namespace Atelier.Requests;
+
+public sealed class CreateProductRequest
 {
-    public class CreateProductRequest
-    {
-        public required string Sku { get; set; }
-        public required string Name { get; set; }
-        public int PriceCents { get; set; }
+    [Required(ErrorMessage = "Le SKU est obligatoire.")]
+    [StringLength(450, ErrorMessage = "Le SKU ne peut pas dépasser 450 caractères.")]
+    public required string Sku { get; set; }
 
-        public int Stock { get; set; }
-        public ProductCategory Category { get; set; }
-        public bool Active { get; set; } = true;
-        public DateTimeOffset CreatedAt { get; set; }
+    [Required(ErrorMessage = "Le nom est obligatoire.")]
+    [StringLength(200, ErrorMessage = "Le nom ne peut pas dépasser 200 caractères.")]
+    public required string Name { get; set; }
 
-        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-    }
+    [Range(0, int.MaxValue, ErrorMessage = "Le prix doit être un montant positif ou nul en cents.")]
+    public required int PriceCents { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Le stock doit être positif ou nul.")]
+    public required int Stock { get; set; }
+
+    [EnumDataType(typeof(ProductCategory), ErrorMessage = "La catégorie est invalide.")]
+    public required ProductCategory Category { get; set; }
+
+    public bool Active { get; set; } = true;
 }
