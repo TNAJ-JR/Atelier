@@ -167,6 +167,20 @@ td.number {
   gap: var(--space-6);
 }
 
+.table td.emptyState {
+  padding: var(--space-32) var(--space-20);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.loadError {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-top: var(--space-20);
+}
+
 @media (width <= 1000px) {
   .page {
     padding: var(--space-24);

@@ -1,17 +1,6 @@
-import { apiClient } from "../API/apiClient";
-import type { Product } from "../types/Product";
+import type { LoaderFunctionArgs } from "react-router";
+import { getProducts } from "../API/productsApi";
 
-export async function productsLoader() {
-  const result = await apiClient<Promise<Product[]>>("products/all", {
-    method: "GET",
-  });
-  if (!result) {
-    throw new Error(
-      JSON.stringify({
-        message: "Impossible de charger les produits.",
-        status: 500,
-      }),
-    );
-  }
-  return result;
+export function productsLoader({ request }: LoaderFunctionArgs) {
+  return { products: getProducts(request.signal) };
 }

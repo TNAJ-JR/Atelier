@@ -129,16 +129,39 @@ async function sendCookieAuthenticatedRequest(
   return response;
 }
 
+export class ApiError extends Error {
+  readonly status: number;
+  readonly fieldErrors: Record<string, string[]>;
+
+  constructor(message: string, status: number, fieldErrors: Record<string, string[]> = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
 async function decodeApiResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorResponseBody = (await response.json().catch(() => null)) as {
       message?: string;
       title?: string;
+      errors?: unknown;
     } | null;
-    throw new Error(
+    const fieldErrors: Record<string, string[]> = {};
+    if (errorResponseBody?.errors && typeof errorResponseBody.errors === "object" && !Array.isArray(errorResponseBody.errors)) {
+      for (const [key, messages] of Object.entries(errorResponseBody.errors)) {
+        if (Array.isArray(messages) && messages.every((message) => typeof message === "string")) {
+          fieldErrors[key] = messages;
+        }
+      }
+    }
+    throw new ApiError(
       errorResponseBody?.message ??
         errorResponseBody?.title ??
         "Une erreur est survenue lors de la requête.",
+      response.status,
+      fieldErrors,
     );
   }
   if (response.status === 204) return null as T;

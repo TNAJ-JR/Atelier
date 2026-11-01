@@ -161,6 +161,13 @@
   gap: var(--space-20) var(--space-24);
 }
 
+.formFields {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
 .fullWidth {
   grid-column: 1 / -1;
 }
